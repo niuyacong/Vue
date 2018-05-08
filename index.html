@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<TITLE>todolist等</TITLE>
+	<script src="./vue.js"></script>
+</head>
+<body>
+<div>
+<!--todolist-->
+<div id="root">
+	<div>
+		<input v-model="inputValue"/>
+		<button @click="handlersubmit">提交</button>
+	</div>
+<!--当li复杂时，比如每个li都不同时，这时用到了组件-->
+	<ul>
+		<li v-for="(item,index) of list " :key="index">{{item}}</li>
+	</ul>
+<!--组件的使用-->
+	<ul>
+		<!--content 组件的传值-->
+		<todo-item v-for="(item,index) of list" :key="index" :content="item" :index="index" 
+		@delete="handlerdelete"
+		></todo-item>
+	</ul>
+</div>
+
+<script >
+//创建组件(全局组件)
+//每一个组件都是一个vue实例，都有data、methods属性
+//同样，每个vue实例都是一个组件，也有template属性，默认是挂载点包含的dom
+Vue.component('todo-item',{
+	props:['content','index'],
+	template:'<li @click="handlerclick">{{content}}</li>',
+	methods:{
+		handlerclick:function(){
+			this.$emit('delete',this.index);
+		}
+	}
+});
+//局部组件(此时的todo-item无法使用)
+//var ToDoItem={
+	//template:'<li>item</li>'
+//}
+new Vue({
+el:"#root",
+//components:{//注册局部组件
+	//'todo-item':ToDoItem
+//},
+data:{
+	inputValue:'',
+	list:[]
+},
+methods:{
+	handlersubmit:function(){
+		this.list.push(this.inputValue);
+		this.inputValue=''
+	},
+	handlerdelete:function (index) {
+		this.list.splice(index,1);
+	}
+}
+});
+</script>
+</body>
+</html>

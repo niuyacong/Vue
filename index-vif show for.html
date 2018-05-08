@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<TITLE>v-if等</TITLE>
+	<script src="./vue.js"></script>
+</head>
+<body>
+<div>
+<!--v-if v-show v-for-->
+<div id="root">
+	<!--v-if  直接从dom中删除-->
+	<div v-if="show">hello world</div>
+	<!--v-show  增加了display:none-->
+	<div v-show="show">hello</div>
+	<button @click="handleclick">toggle</button>
+	<ul>
+	<!--v-for  每次循环key值都不能相同-->
+		<li v-for="item of list" :key="item">{{item}}</li>
+	<!--v-for  没有不同的key值时，可以这样写   如果需要对列表进行排序，index这么写法是有问题的-->
+		<li v-for="(item,index) of list" :key="index">{{item}}</li>
+	</ul>
+</div>
+
+<script >
+
+new Vue({
+el:"#root",
+data:{
+	show:true,
+	list:[1,2,3]
+},
+methods:{
+	handleclick:function(){
+		this.show=!this.show;
+	}
+}
+});
+</script>
+</body>
+</html>
