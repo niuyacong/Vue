@@ -1,0 +1,484 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <title> New Document </title>
+  <meta name="Generator" content="EditPlus">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+	<script src="http://htdsj.cn/Scripts/vuejs/axios.min.js"></script>
+	    <script src="http://misc.foodszs.cn/public/weuidist/lib/jquery-2.1.4.js"></script>
+		<script src="http://misc.foodszs.cn/public/scripts/jquery.form.js"></script>
+		    <script src="http://htdsj.cn/Scripts/vuejs/vue-router.v302.js"></script>
+			<script src="iscroll-zoom-min.js"></script>
+<script src="hammer.min.js"></script>
+<script src="lrz.all.bundle.js"></script>
+<script src="PhotoClip.js"></script>
+<script src="qs.js"></script>
+	    <link rel="stylesheet" href="http://misc.foodszs.cn/public/weuidist/lib/weui.min.css">
+    <link rel="stylesheet" href="http://misc.foodszs.cn/public/weuidist/css/jquery-weui.css">
+	<style>
+	
+		.logo_cls{
+		  width: 1.70667rem;
+			height: 1.70667rem;
+		  
+		}
+		.logo_cls img{
+			width:100%;
+			height:100%;
+		  }  
+		 .logo_cls i{
+			font-size:46px;
+			color:#cecccc;
+		  }
+		#flieDiv #file {
+		 position: absolute; 
+		 left: 0; 
+		 opacity: 0;
+		 top: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1000;
+	 }
+
+
+	 .photoDIV {
+		position: fixed;
+		right: 0;
+		background: #3b3b3b;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1000;
+	}
+	.photoDIV #clipArea {
+		width: 100%;
+		height: 100%;
+	}
+	.photoDIV #clipBtn, .photoDIV .quxiao {
+		position: fixed;
+		top: .48rem;
+		right: .48rem;
+		line-height: .85333rem;
+		z-index: 1000;
+	}
+	.photoDIV .quxiao {
+    right: auto;
+    left: .48rem;
+    margin: 0!important;
+}
+	</style>
+ </head>
+
+ <body>
+    <div id="app">
+	<input id="code" name="code" value="" style="display:none" />
+	<input id="id" name="id" value="218" style="display:none" />
+	<input id="flag" name="flag" value="0" style="display:none" />
+	<input id="detail" name="detail" value="0" style="display:none" />
+	<field-pic></field-pic>
+  </div>
+
+
+    <script>
+
+	const User = {
+  template: '<div>User{{ $route.params.id }}</div>'
+}
+const router = new VueRouter({
+  routes: [
+    { path: '/user', component: User }
+  ]
+})
+
+
+	//文本框
+	Vue.component('field-input',{
+		props:['name','placename','values'],
+		template:'<div  class="weui-cell"><div class="weui-cell__hd"><label  class="weui-label" v-text="placename"></label></div> <div  class="weui-cell__bd"><input type="text" v-bind:placeholder="\'请输入\'+placename" class="weui-input" v-bind:id="name" v-bind:name="name" v-bind:value="values"/></div></div>',
+		data(){
+			return{
+				//val:''
+			}
+		}
+		
+
+	})
+	//详情框
+	Vue.component('field-details',{
+		props:['name','placename','values'],
+		template:'<div  class="weui-cell"><div class="weui-cell__hd"><label  class="weui-label" v-text="placename"></label></div> <div  class="weui-cell__bd"><span v-text="values"></span></div></div>',
+		data(){
+			return{
+				//val:''
+			}
+		}
+		
+
+	})
+	//下拉框
+	Vue.component('field-select',{
+		props:['name','placename','values','code'],
+		template:`
+		<div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <div class="weui-cell__hd"><label :for="name" class="weui-label" v-text="placename"></label></div>
+                <div class="weui-cell__bd">
+                    <select class="weui-select" v-bind:id="name" v-bind:name="name" type="text">
+						 <option v-for="item in items" :value="item.key" :selected="values==item.key">{{
+                        item.val }}
+                    </option>
+
+					</select>
+                </div>
+            </div>
+        </div>`,
+		data(){
+		return{
+			items:[]
+		}
+		},
+		mounted(){
+			var $this=this;
+			axios.get('http://localhost:54703/data/GetItem?code='+$this.code+"&field="+$this.name)
+			  .then(function (response) {
+	
+				var res=JSON.stringify(response);
+				var data=response.data.result;
+				$this.items=data;
+				 })
+			  .catch(function (error) {
+				console.log(error);
+			  });
+		}
+	})
+	
+	//日期
+	Vue.component('field-date',{
+	props:['name','placename','values'],
+	template:`
+	<div class="weui-cells weui-cells_form">
+            <div class="weui-cell">
+                <div class="weui-cell__hd"><label :for="name" class="weui-label">{{placename}}</label></div>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" :id="name" type="date" :value="getFDate()">
+                </div>
+            </div>
+        </div>    `,
+	data(){
+		return{
+			//val:''
+		}
+	},
+	mounted(){
+		
+	},
+	methods:{
+		
+		getFDate() {
+			var $this=this;
+			var date=$this.values;
+			var d = eval('new ' + date.substr(1, date.length - 2));
+
+			var ar_date = [d.getFullYear(), d.getMonth() + 1, d.getDate()];
+
+			for (var i = 0; i < ar_date.length; i++) ar_date[i] = $this.dFormat(ar_date[i]);
+			var date=ar_date.join('-');
+			return date;
+			},
+			dFormat(i) {
+			return i < 10 ? "0" + i.toString() : i;
+			}
+	}
+	})
+
+	//单选框
+	Vue.component('field-radio',{
+	props:['name','placename','values'],
+	template:`
+	        <div class="weui-cells weui-cells_form">
+            <div class="weui-cells__title" v-text="placename"></div>
+            <div class="weui-cells weui-cells_checkbox">
+                <label class="weui-cell weui-check__label" v-bind:for="radio.names+index" v-for="checks,index in radio.items">
+                    <div class="weui-cell__hd">
+                        <input type="radio" class="weui-check" v-bind:name="radio.names" v-bind:id="radio.names+index" :checked="values==checks.val">
+                        <i class="weui-icon-checked"></i>
+                    </div>
+                    <div class="weui-cell__bd">
+                        <p v-text="checks.val"></p>
+                    </div>
+                </label>
+            </div>
+        </div>  `,
+	data(){
+		return{
+			radio:{
+            title:"性别",
+            names:this.name,
+            items:[
+				{"val":"男"},
+				{"val":"女"},
+			]
+        }
+		}
+	},
+	mounted(){
+		var $this=this;
+			axios.get('http://localhost:54703/data/GetItem?code='+$this.code+"&field="+$this.name)
+			  .then(function (response) {
+	
+				var res=JSON.stringify(response);
+				var data=response.data.result;
+				$this.items=data;
+				 })
+			  .catch(function (error) {
+				console.log(error);
+			  });
+	}
+	})
+
+
+	//复选框
+	Vue.component('field-checkbox',{
+	props:['name','placename','values'],
+	template:`
+	       <div class="weui-cells weui-cells_form">
+     <div class="weui-cells__title" v-text="checkbox.title"></div>
+     <div class="weui-cells weui-cells_checkbox">
+         <label class="weui-cell weui-check__label" v-bind:for="checkbox.names+index" v-for="checks,index in checkbox.items">
+             <div class="weui-cell__hd">
+                 <input type="checkbox" class="weui-check" v-bind:name="checkbox.names" v-bind:id="checkbox.names+index">
+                 <i class="weui-icon-checked"></i>
+             </div>
+             <div class="weui-cell__bd">
+                 <p v-text="checks.val"></p>
+             </div>
+         </label>
+     </div>
+ </div>  `,
+	data(){
+		return{
+			 checkbox:{
+				title:"复选列表项",
+				names:"check1",
+				items:[
+					{"val":"复选框1"},
+					{"val":"复选框2"}
+				]
+			}
+        
+		}
+	},
+	mounted(){
+		var $this=this;
+		$this.names=$this.name;
+			axios.get('http://localhost:54703/data/GetItem?code='+$this.code+"&field="+$this.name)
+			  .then(function (response) {
+	
+				var res=JSON.stringify(response);
+				var data=response.data.result;
+				$this.items=data;
+				 })
+			  .catch(function (error) {
+				console.log(error);
+			  });
+	}
+	})
+	//图片上传
+	Vue.component('field-pic',{
+	props:['name','placename','values'],
+	template:`
+	 <div>
+                   <div class="weui-cells">
+					  <a class="weui-cell weui-cell_access" id="flieDiv" >
+					   <input type="file" id="file" accept="image/*" />
+					   <div class="weui-cell__bd"><p>{{ placename }}</p></div>
+						<div class="weui-cell__ft logo_cls">
+						  <i class="iconfont icon-gerenzhongxinwode" v-if="Headimgurl==''">
+						  </i>
+						  <img v-bind:src="src"  />
+
+						  <input :id="name" name="name" style="display:none" value="src"/>
+						</div>
+					  </a>
+					</div>
+					 <!-- PhotoClip -->
+				 <div class="photoDIV" v-show="showphoto1!=0">   
+					<div id="clipArea"></div>
+					<a href="javascript:;" id="clipBtn" class="weui-btn weui-btn_primary">使用</a>
+					<a href="javascript:;" class="weui-btn weui-btn_default quxiao" @click="quxiao">取消</a>
+				  </div>
+        </div> `,
+	data(){
+		return{
+			showphoto1:'',
+			val:'',
+			name:'img',
+			placename:'上传名片',
+			Headimgurl:'',
+			src:this.values,
+		
+        picphoto:'',   //未剪切前图片
+
+		}
+	},
+	methods:{
+	
+		  quxiao(){
+      this.showphoto1=0;
+      this.picphoto='';
+    },
+	},
+	mounted() {
+		var $this = this;
+    //
+ 
+    //
+    var clipArea = new PhotoClip("#clipArea", {
+        size: [300, 300], //裁剪框大小
+        outputSize: [600,600], //打开图片大小，[0,0]表示原图大小
+        // img: $this.picphoto,
+        file:"#file",
+        view: "#view", //裁剪预览图片id（需要的自行添加）
+        ok: "#clipBtn",
+        loadStart: function() { //图片开始加载的回调函数。this 指向当前 PhotoClip 的实例对象，并将正在加载的 file 对象作为参数传入。（如果是使用非 file 的方式加载图片，则该参数为图片的 url）
+          $this.showphoto1=1;
+		  console.log('开始读取照片');
+        },
+        loadComplete: function() { //图片加载完成的回调函数。this 指向当前 PhotoClip 的实例对象，并将图片的 <img> 对象作为参数传入。
+			console.log('照片读取完成');
+        },
+        done: function(dataURL) { //裁剪完成的回调函数。this 指向当前 PhotoClip 的实例对象，会将裁剪出的图像数据DataURL作为参数传入。      
+            console.log(dataURL); //dataURL裁剪后图片地址base64格式提交给后台处理
+            axios({
+              method: 'POST',
+              url: 'http://localhost:54703/data/GetImageFromBase64',                      
+              data:{              
+                base64string: dataURL
+              },  
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'  //请求头
+              },
+              transformRequest: [function (data) {
+                data = Qs.stringify(data)  //序列化参数
+                return data
+              }]
+              })
+             .then(function (response) {
+                  //console.log(response)
+				  $this.src=response.data;
+					$this.showphoto1=0;
+				  })
+			  .catch(function (error) {
+				console.log(error)
+			  })
+			
+        }
+    });
+	}
+	})
+	//添加或编辑
+  	var compon=Vue.component('field-add',{
+
+		data(){
+		return{
+			result:[],
+			code:'123',
+			flag:$("#flag").val(),
+			id:$("#id").val()
+        }},
+		template:`<div><form :id="\'submit\'+code" :name="\'submit\'+code" method="post" action="http://localhost:54703/data/DataEdit">
+		<input id="_code" name="_code" v-bind:value="code" style="display:none" />
+		<input id="_id" name="_id" v-bind:value="id" style="display:none" />
+		<div v-for="list,index in result" :key="index">
+		<field-input v-bind:name="list.key" v-bind:placename="list.name"  v-bind:values="list.val" v-if="list.type==\'文本框\' "></field-input>
+		<field-select v-bind:code="code" v-bind:name="list.key" v-bind:placename="list.name" v-bind:values="list.val" v-if="list.type==\'下拉框\' "></field-select>
+		<field-date v-bind:name="list.key" v-bind:placename="list.name" v-bind:values="list.val" v-if="list.type==\'日期\' "></field-date>
+		<field-pic v-bind:name="list.key" v-bind:placename="list.name" v-bind:values="list.val" v-if="list.type==\'图片上传\' "></field-pic>
+		<field-checkbox v-bind:name="list.key" v-bind:placename="list.name" v-bind:values="list.val" v-if="list.type==\'复选框\' "></field-checkbox>
+		</div>
+		
+		</form>
+			<a href="javascript:;" class="weui-btn weui-btn_warn" @click="loginhandle()" >提交</a>
+			</div>
+		`,
+		mounted(){
+			var $this=this;
+			$("#code").val($this.code);
+			axios.get('http://localhost:54703/data/Edit?code='+$this.code+"&flag="+$this.flag+"&id="+$this.id)
+			  .then(function (response) {
+	
+				var res=JSON.stringify(response);
+				var data=response.data.result;
+				$this.result=data;
+				console.log("result:"+$this.result);
+				 })
+			  .catch(function (error) {
+				console.log(error);
+			  });
+			  },
+		methods:{
+		loginhandle(){
+			var $this=this;
+			$("#submit"+$this.code).ajaxSubmit(function(data){
+				
+			
+			})
+		}
+			
+		}
+	
+	});
+
+	//详情
+	var compondetail=Vue.component('field-detail',{
+
+		data(){
+		return{
+			result:[],
+			code:$("#code").val(),
+			flag:$("detail").val(),
+			id:$("#id").val()
+			
+        }},
+		template:`<div><div v-for="list,index in result" :key="index">
+		<field-details v-bind:name="list.key" v-bind:placename="list.name" v-bind:values="list.val" v-if="list.type!=\'图片上传\' "></field-details>
+		</div></div>`,
+		mounted(){
+			var $this=this;
+			axios.get('http://localhost:54703/data/Edit?code='+$this.code+"&flag="+$this.flag+"&id="+$this.id)
+			  .then(function (response) {
+	
+				var res=JSON.stringify(response);
+				var data=response.data.result;
+				$this.result=data;
+				console.log("result:"+$this.result);
+				 })
+			  .catch(function (error) {
+				console.log(error);
+			  });
+			  }
+	
+	});
+
+
+
+
+
+	var app=new Vue({
+	router,
+	data: {
+		temp:''
+	},
+	methods:{
+		
+	}
+	}).$mount('#app')
+
+
+  </script>
+ </body>
+</html>
