@@ -180,50 +180,82 @@ p {
 
 
 <!--动画效果-->
-    <transition v-bind:name="mch">
-        <router-view class="child-view"></router-view>
-    </transition>
+<transition v-bind:name="mch">
+	<router-view class="child-view"></router-view>
+</transition>
 
 
 <!--插槽-->
 <submit-button>Save</submit-button>
 <!--具名插槽-->
 <subtest>
-  <template v-slot:header>
+  <template #header><!--v-slot:header   新写法 #header-->
     <h1>Here might be a page title</h1>
   </template>
-
   <p>A paragraph for the main content.</p>
   <p>And another one.</p>
-
   <template v-slot:footer>
     <p>Here's some contact info</p>
   </template>
-  </subtest>
+</subtest>
 
 
 
-  
+<!--//作用域插槽-->
 <current-user >
    <template slot-scope="as">
-                <li>{{as.value}}</li>
-            </template>
-			</current-user >
+       <li>{{as.value}}</li>
+   </template>
+</current-user >
+
+
 <current-user >
+<!--slot-scope 特性也可以直接用于非 <template> 元素 (包括组件)：  不写默认是  slot-scope="default" -->
  <template slot-scope="props">
-                <h1>{{props.value}}</h1>
-            </template>
-
+    <h1>{{props.value}}</h1>
+ </template>
 </current-user>
-  </div>
+
+
+<!--独占默认插槽-->
+<default-user v-slot:default="slotProps">
+  {{ slotProps.value }}
+</default-user>
 
 
 
-    <script>
+<!--在动态组件上使用 keep-alive
+<keep-alive>
+  <component v-bind:is="currentTabComponent"></component>
+</keep-alive>
+
+-->
+</div>
+<script>
+//在动态组件上使用 keep-alive
+
 
 
 
 //slot 插槽
+
+//独占默认插槽
+Vue.component('default-user',{
+	data(){
+		return {
+			list:[1,2,3,4]
+		}
+		},
+	template:`
+		<span>
+		<ul>
+		   <slot v-for="value in list" :value=value>//使用slot占位
+                                </slot>
+</ul>
+		</span>
+	`
+	
+})
 
 //作用域插槽
 Vue.component('current-user',{
